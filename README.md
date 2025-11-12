@@ -2,7 +2,7 @@
 
 ## 🛡️ Project Overview
 
-**IPGuardian** is a revolutionary decentralized platform that empowers creators to protect, monetize, and trade their intellectual property assets on the blockchain. Built on the 0G testnet and powered by Walrus decentralized storage, IPGuardian transforms how creators manage their digital assets by providing transparent ownership, flexible monetization, and secure storage solutions.
+**IPGuardian** is a revolutionary decentralized platform that empowers creators to protect, monetize, and trade their intellectual property assets on the blockchain. Built on the Flow testnet and powered by Walrus decentralized storage, IPGuardian transforms how creators manage their digital assets by providing transparent ownership, flexible monetization, and secure storage solutions.
 
 ## 🌟 Key Features
 
@@ -92,7 +92,7 @@
 ## 🔗 Technology Stack
 
 - **Frontend**: Next.js, React, TypeScript, Tailwind CSS
-- **Blockchain**: 0G Testnet, Solidity Smart Contracts
+- **Blockchain**: Flow Testnet, Solidity Smart Contracts
 - **Storage**: Walrus Decentralized Storage
 - **Wallet**: MetaMask Integration
 - **Database**: PostgreSQL with Prisma ORM
