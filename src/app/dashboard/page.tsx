@@ -30,7 +30,7 @@ export default function DashboardPage() {
   const connectWallet = async () => {
     try {
       if (typeof window.ethereum !== 'undefined') {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' }) as string[];
         const address = accounts[0];
         setUserAddress(address);
         setWalletConnected(true);
@@ -56,17 +56,41 @@ export default function DashboardPage() {
     if (userData) {
       setUser(JSON.parse(userData));
     }
-    
+
+    // Auto-connect wallet if previously connected
+    const autoConnectWallet = async () => {
+      try {
+        if (typeof window.ethereum !== 'undefined') {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' }) as string[];
+          if (accounts.length > 0) {
+            const address = accounts[0];
+            setUserAddress(address);
+            setWalletConnected(true);
+
+            // Create contract service with signer
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            setContractService(new ContractService(signer));
+
+            // Load user data
+            await loadUserData(address);
+          }
+        }
+      } catch (error) {
+        console.error('Auto-connect failed:', error);
+      }
+    };
+
+    autoConnectWallet();
+
     // Set a timeout to prevent infinite loading
     const timeout = setTimeout(() => {
       if (loading) {
         setLoading(false);
-        setError('Loading timeout. Please check your contract configuration.');
+        // setError('Loading timeout. Please check your contract configuration.');
       }
-    }, 10000); // 10 second timeout
-    
-    setLoading(false);
-    
+    }, 15000); // 15 second timeout
+
     return () => clearTimeout(timeout);
   }, []);
 
@@ -74,38 +98,54 @@ export default function DashboardPage() {
   const loadUserData = async (address: string) => {
     try {
       setLoading(true);
+      console.log('🔍 Loading user data for address:', address);
       const service = new ContractService();
-      
+
       // Get user's items
+      console.log('📋 Fetching user items...');
       const itemIds = await service.getUserItems(address);
+      console.log('📋 Found item IDs:', itemIds);
+
       const items = await Promise.all(
         itemIds.map(async id => {
           try {
-            return await service.getItem(id);
+            console.log(`📄 Loading item ${id}...`);
+            const item = await service.getItem(id);
+            console.log(`✅ Loaded item ${id}:`, item.title);
+            return item;
           } catch (error) {
-            console.warn(`Failed to load item ${id}:`, error);
+            console.warn(`❌ Failed to load item ${id}:`, error);
             return null;
           }
         })
       );
-      setUserItems(items.filter(item => item !== null));
+      const validItems = items.filter(item => item !== null);
+      console.log('📊 Final items loaded:', validItems.length);
+      setUserItems(validItems);
 
       // Get user's rentals
+      console.log('🏠 Fetching user rentals...');
       const rentalIds = await service.getUserRentals(address);
+      console.log('🏠 Found rental IDs:', rentalIds);
+
       const rentals = await Promise.all(
         rentalIds.map(async id => {
           try {
-            return await service.getRental(id);
+            const rental = await service.getRental(id);
+            console.log(`✅ Loaded rental ${id}`);
+            return rental;
           } catch (error) {
-            console.warn(`Failed to load rental ${id}:`, error);
+            console.warn(`❌ Failed to load rental ${id}:`, error);
             return null;
           }
         })
       );
       setUserRentals(rentals.filter(rental => rental !== null));
+
+      console.log('🎉 User data loaded successfully');
     } catch (error) {
-      console.error('Error loading user data:', error);
-      setError('Failed to load user data. Make sure your contract is deployed and environment variables are set.');
+      console.error('❌ Error loading user data:', error);
+      setError(`Failed to load user data: ${error instanceof Error ? error.message : 'Unknown error'}. Make sure your contract is deployed and environment variables are set.`);
     } finally {
       setLoading(false);
     }
@@ -162,7 +202,7 @@ export default function DashboardPage() {
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
                 <Shield className="h-8 w-8 text-indigo-600" />
-                <span className="ml-2 text-xl font-bold text-gray-900">IP Rights Store</span>
+                <span className="ml-2 text-xl font-bold text-gray-900">IPGuardian</span>
               </Link>
             </div>
             <div className="flex items-center space-x-4">
@@ -205,12 +245,22 @@ export default function DashboardPage() {
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-red-800">{error}</p>
-            <button
-              onClick={() => setError('')}
-              className="mt-2 text-red-600 hover:text-red-800 text-sm"
-            >
-              Dismiss
-            </button>
+            <div className="flex space-x-2 mt-2">
+              <button
+                onClick={() => setError('')}
+                className="text-red-600 hover:text-red-800 text-sm"
+              >
+                Dismiss
+              </button>
+              {userAddress && (
+                <button
+                  onClick={() => loadUserData(userAddress)}
+                  className="text-indigo-600 hover:text-indigo-800 text-sm"
+                >
+                  Retry Loading Data
+                </button>
+              )}
+            </div>
           </div>
         )}
 
@@ -231,7 +281,7 @@ export default function DashboardPage() {
               <DollarSign className="h-8 w-8 text-green-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">{totalRevenue.toFixed(4)} ETH</p>
+                <p className="text-2xl font-bold text-gray-900">{totalRevenue.toFixed(4)} MNT</p>
               </div>
             </div>
           </div>
@@ -299,7 +349,7 @@ export default function DashboardPage() {
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Revenue:</span>
                         <span className="font-medium text-green-600">
-                          {ContractService.formatEther(item.totalRevenue)} ETH
+                          {ContractService.formatEther(item.totalRevenue)} MNT
                         </span>
                       </div>
                     </div>
@@ -368,7 +418,7 @@ export default function DashboardPage() {
                       <div>
                         <span className="text-gray-600">Amount Paid:</span>
                         <span className="ml-2 font-medium text-gray-900">
-                          {ContractService.formatEther(rental.amountPaid)} ETH
+                          {ContractService.formatEther(rental.amountPaid)} MNT
                         </span>
                       </div>
                       <div>

@@ -140,7 +140,7 @@ export default function BrowsePage() {
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
                 <Shield className="h-8 w-8 text-indigo-600" />
-                <span className="ml-2 text-xl font-bold text-gray-900">IP Rights Store</span>
+                <span className="ml-2 text-xl font-bold text-gray-900">IPGuardian</span>
               </Link>
             </div>
             <div className="flex items-center space-x-4">

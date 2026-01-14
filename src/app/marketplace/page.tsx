@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 import { ContractService, IPItem } from '@/lib/contract';
-import { Download, ShoppingCart, Clock, Users, DollarSign, Calendar, User, Eye } from 'lucide-react';
+import { Download, ShoppingCart, Clock, Users, DollarSign, Calendar, Eye } from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
 interface MarketplaceItem extends IPItem {
@@ -19,12 +19,14 @@ export default function MarketplacePage() {
   const [userAddress, setUserAddress] = useState('');
   const [walletConnected, setWalletConnected] = useState(false);
   const [contractService, setContractService] = useState<ContractService | null>(null);
+  const [rentingItemId, setRentingItemId] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   // Connect wallet
   const connectWallet = async () => {
     try {
       if (typeof window.ethereum !== 'undefined') {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' }) as string[];
         const address = accounts[0];
         setUserAddress(address);
         setWalletConnected(true);
@@ -43,18 +45,18 @@ export default function MarketplacePage() {
   };
 
   // Load marketplace items
-  const loadItems = async () => {
+  const loadItems = useCallback(async () => {
     try {
       setLoading(true);
       const service = new ContractService();
       const activeItems = await service.getActiveItems(0, 50);
-      
+
       // Check ownership and rental status for each item
       const itemsWithStatus = await Promise.all(
         activeItems.map(async (item) => {
           const isOwner = item.owner.toLowerCase() === userAddress.toLowerCase();
           let hasActiveRental = false;
-          
+
           if (userAddress && !isOwner) {
             try {
               hasActiveRental = await service.hasActiveRental(item.itemId, userAddress);
@@ -63,11 +65,11 @@ export default function MarketplacePage() {
               console.warn(`Failed to check rental status for item ${item.itemId}:`, error);
             }
           }
-          
+
           return { ...item, isOwner, hasActiveRental };
         })
       );
-      
+
       setItems(itemsWithStatus);
     } catch (error) {
       console.error('Error loading items:', error);
@@ -75,7 +77,7 @@ export default function MarketplacePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userAddress]);
 
   // Purchase item
   const purchaseItem = async (itemId: number, price: string) => {
@@ -85,13 +87,21 @@ export default function MarketplacePage() {
     }
 
     try {
+      showToast('Processing purchase...', 'info');
       await contractService.purchaseItem(itemId, price);
-      alert('Item purchased successfully!');
+      showToast('Item purchased successfully! You can now download the file.', 'success');
       loadItems(); // Refresh the list
     } catch (error) {
       console.error('Error purchasing item:', error);
       setError('Failed to purchase item');
+      showToast('Purchase failed. Please try again.', 'error');
     }
+  };
+
+  // Show toast notification
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 5000); // Auto-hide after 5 seconds
   };
 
   // Rent item
@@ -101,11 +111,14 @@ export default function MarketplacePage() {
       return;
     }
 
+    setRentingItemId(itemId);
+    showToast('Processing rental...', 'info');
+
     try {
       const startTime = Math.floor(Date.now() / 1000) + 60; // Start 1 minute in the future
       const endTime = startTime + (days * 24 * 60 * 60);
       const totalCost = (BigInt(rentalPrice) * BigInt(days)).toString();
-      
+
       console.log('Renting item:', {
         itemId,
         rentalPrice,
@@ -114,17 +127,21 @@ export default function MarketplacePage() {
         endTime,
         totalCost
       });
-      
+
       await contractService.rentItem(itemId, startTime, endTime, totalCost);
-      alert(`Item rented for ${days} days! You can now download the file.`);
-      
-      // Wait a moment for blockchain state to update, then refresh
+
+      showToast(`Successfully rented for ${days} days! You can now download the file.`, 'success');
+
+      // Wait longer for blockchain state to update, then refresh
       setTimeout(() => {
         loadItems();
-      }, 2000);
+        setRentingItemId(null);
+      }, 5000); // Increased to 5 seconds
     } catch (error) {
       console.error('Error renting item:', error);
-      setError(`Failed to rent item: ${error.message}`);
+      setError(`Failed to rent item: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      showToast('Rental failed. Please try again.', 'error');
+      setRentingItemId(null);
     }
   };
 
@@ -153,7 +170,7 @@ export default function MarketplacePage() {
 
   useEffect(() => {
     loadItems();
-    
+
     // Set a timeout to prevent infinite loading
     const timeout = setTimeout(() => {
       if (loading) {
@@ -161,9 +178,10 @@ export default function MarketplacePage() {
         setError('Loading timeout. Please check your contract configuration.');
       }
     }, 10000); // 10 second timeout
-    
+
     return () => clearTimeout(timeout);
-  }, [userAddress]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadItems]);
 
   if (loading) {
     return (
@@ -222,6 +240,17 @@ export default function MarketplacePage() {
           </div>
         )}
 
+        {/* Toast Notification */}
+        {toast && (
+          <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+            toast.type === 'success' ? 'bg-green-500 text-white' :
+            toast.type === 'error' ? 'bg-red-500 text-white' :
+            'bg-blue-500 text-white'
+          }`}>
+            <p>{toast.message}</p>
+          </div>
+        )}
+
         {/* Items Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.map((item) => (
@@ -250,7 +279,7 @@ export default function MarketplacePage() {
                   </div>
                   <div className="flex items-center text-sm text-gray-500">
                     <DollarSign className="w-4 h-4 mr-1" />
-                    {ContractService.formatEther(item.totalRevenue)} ETH
+                    {ContractService.formatEther(item.totalRevenue)} MNT
                   </div>
                 </div>
 
@@ -260,7 +289,7 @@ export default function MarketplacePage() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Purchase Price:</span>
                       <span className="font-semibold text-green-600">
-                        {ContractService.formatEther(item.price)} ETH
+                        {ContractService.formatEther(item.price)} MNT
                       </span>
                     </div>
                   )}
@@ -268,7 +297,7 @@ export default function MarketplacePage() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Rental Price:</span>
                       <span className="font-semibold text-blue-600">
-                        {ContractService.formatEther(item.rentalPrice)} ETH/day
+                        {ContractService.formatEther(item.rentalPrice)} MNT/day
                       </span>
                     </div>
                   )}
@@ -278,13 +307,21 @@ export default function MarketplacePage() {
                 <div className="space-y-2">
                   {/* Download Button - Only show if user owns, has active rental, or purchased */}
                   {(item.isOwner || item.hasActiveRental) ? (
-                    <button
-                      onClick={() => downloadFile(item.blobId, item.title)}
-                      className="w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download
-                    </button>
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => downloadFile(item.blobId, item.title)}
+                        className="w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download
+                      </button>
+                      <button
+                        onClick={loadItems}
+                        className="w-full flex items-center justify-center px-3 py-1 bg-gray-100 text-gray-600 rounded text-xs hover:bg-gray-200 transition-colors"
+                      >
+                        ↻ Refresh Status
+                      </button>
+                    </div>
                   ) : (
                     <div className="w-full flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-500 rounded-lg">
                       <Download className="w-4 h-4 mr-2" />
@@ -308,17 +345,37 @@ export default function MarketplacePage() {
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         onClick={() => rentItem(item.itemId, item.rentalPrice, 1)}
-                        className="flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                        disabled={rentingItemId === item.itemId}
+                        className="flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors text-sm"
                       >
-                        <Clock className="w-4 h-4 mr-1" />
-                        1 Day
+                        {rentingItemId === item.itemId ? (
+                          <>
+                            <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent mr-1"></div>
+                            Renting...
+                          </>
+                        ) : (
+                          <>
+                            <Clock className="w-4 h-4 mr-1" />
+                            1 Day
+                          </>
+                        )}
                       </button>
                       <button
                         onClick={() => rentItem(item.itemId, item.rentalPrice, 7)}
-                        className="flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                        disabled={rentingItemId === item.itemId}
+                        className="flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors text-sm"
                       >
-                        <Calendar className="w-4 h-4 mr-1" />
-                        7 Days
+                        {rentingItemId === item.itemId ? (
+                          <>
+                            <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent mr-1"></div>
+                            Renting...
+                          </>
+                        ) : (
+                          <>
+                            <Calendar className="w-4 h-4 mr-1" />
+                            7 Days
+                          </>
+                        )}
                       </button>
                     </div>
                   )}

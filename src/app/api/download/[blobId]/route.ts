@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { downloadFromWalrus } from '@/lib/walrus';
+import { downloadFromIPFS } from '@/lib/ipfs';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { blobId: string } }
+  { params }: { params: Promise<{ blobId: string }> }
 ) {
   try {
-    const { blobId } = params;
+    const { blobId } = await params;
 
     if (!blobId) {
       return NextResponse.json(
@@ -15,21 +15,21 @@ export async function GET(
       );
     }
 
-    // Check if it's a mock blob ID
-    if (blobId.startsWith('mock-blob-')) {
+    // Check if it's a mock CID
+    if (blobId.startsWith('mock-cid-')) {
       return NextResponse.json(
-        { error: 'Mock blob ID - file not available for download' },
+        { error: 'Mock CID - file not available for download' },
         { status: 404 }
       );
     }
 
-    console.log(`📥 Downloading file with blob ID: ${blobId}`);
+    console.log(`📥 Downloading file with CID: ${blobId}`);
 
-    // Download from Walrus
-    const fileContents = await downloadFromWalrus(blobId);
+    // Download from IPFS
+    const fileContents = await downloadFromIPFS(blobId);
 
     // Return the file as a response
-    return new NextResponse(fileContents, {
+    return new NextResponse(Buffer.from(fileContents), {
       headers: {
         'Content-Type': 'application/octet-stream',
         'Content-Disposition': `attachment; filename="file-${blobId}"`,

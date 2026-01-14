@@ -78,7 +78,7 @@ export default function HomePage() {
       {/* Features Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose IP Rights Store?</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose IPGuardian?</h2>
           <p className="text-lg text-gray-600">Secure, decentralized, and transparent intellectual property management</p>
         </div>
         
@@ -87,7 +87,7 @@ export default function HomePage() {
             <Shield className="h-12 w-12 text-indigo-600 mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Blockchain Security</h3>
             <p className="text-gray-600">
-              Your intellectual property is secured using Walrus decentralized storage with cryptographic verification.
+              Your intellectual property is secured using IPFS decentralized storage with cryptographic verification.
             </p>
           </div>
           
@@ -123,7 +123,7 @@ export default function HomePage() {
                 <Upload className="h-8 w-8 text-indigo-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">1. Upload</h3>
-              <p className="text-gray-600">Upload your research papers or journals to Walrus storage</p>
+              <p className="text-gray-600">Upload your research papers or journals to IPFS storage</p>
             </div>
             
             <div className="text-center">
@@ -161,7 +161,7 @@ export default function HomePage() {
             <div>
               <div className="flex items-center mb-4">
                 <Shield className="h-8 w-8 text-indigo-400" />
-                <span className="ml-2 text-xl font-bold">IP Rights Store</span>
+                <span className="ml-2 text-xl font-bold">IPGuardian</span>
               </div>
               <p className="text-gray-400">
                 Secure intellectual property management using blockchain technology.
@@ -197,7 +197,7 @@ export default function HomePage() {
           </div>
           
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 IP Rights Store. All rights reserved.</p>
+            <p>&copy; 2026 IPGuardian. All rights reserved.</p>
           </div>
         </div>
       </footer>
