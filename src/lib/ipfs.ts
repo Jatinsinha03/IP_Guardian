@@ -25,7 +25,8 @@ export async function uploadToIPFS(fileContents: Uint8Array, fileName?: string):
     }
 
     // Create a File object from the Uint8Array
-    const file = new File([fileContents], fileName || 'upload', {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const file = new File([fileContents as any], fileName || 'upload', {
       type: 'application/octet-stream'
     });
 

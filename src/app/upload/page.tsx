@@ -45,7 +45,7 @@ export default function UploadPage() {
   const connectWallet = async () => {
     try {
       if (typeof window.ethereum !== 'undefined') {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' }) as string[];
         const address = accounts[0];
         setUserAddress(address);
         setWalletConnected(true);
@@ -83,7 +83,7 @@ export default function UploadPage() {
     }
 
     if (!walletConnected) {
-      setError('Please connect your wallet first');
+      setError('Please connect your wallet before uploading. Your items need to be registered on the blockchain to be visible in your dashboard.');
       return;
     }
 
@@ -92,7 +92,7 @@ export default function UploadPage() {
     setSuccess('');
 
     try {
-      // First upload to Walrus and save to database
+      // First upload to IPFS and save to database
       const formDataToSend = new FormData();
       formDataToSend.append('file', selectedFile);
       formDataToSend.append('name', formData.name);
@@ -110,28 +110,34 @@ export default function UploadPage() {
       const data = await response.json();
 
       if (response.ok) {
-      // Now create item on blockchain
-      if (contractService && data.blockchainData) {
-        console.log('🚀 Starting blockchain item creation...');
-        console.log('Blockchain data:', data.blockchainData);
-        
-        try {
-          const itemId = await contractService.createItem(
-            data.blockchainData.title,
-            data.blockchainData.description,
-            data.blockchainData.blobId,
-            data.blockchainData.price,
-            data.blockchainData.rentalPrice
-          );
-          console.log('✅ Blockchain item created with ID:', itemId);
-          setSuccess(`File uploaded successfully! Item ID: ${itemId}`);
-        } catch (error) {
-          console.error('❌ Blockchain item creation failed:', error);
-          throw error;
+        // Now create item on blockchain
+        if (contractService && data.blockchainData) {
+          console.log('🚀 Starting blockchain item creation...');
+          console.log('Blockchain data:', data.blockchainData);
+
+          try {
+            const itemId = await contractService.createItem(
+              data.blockchainData.title,
+              data.blockchainData.description,
+              data.blockchainData.blobId,
+              data.blockchainData.price,
+              data.blockchainData.rentalPrice
+            );
+            console.log('✅ Blockchain item created with ID:', itemId);
+            setSuccess(`File uploaded successfully! Item ID: ${itemId}`);
+          } catch (error) {
+            console.error('❌ Blockchain item creation failed:', error);
+            setError(`Upload completed but blockchain registration failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            throw error;
+          }
+        } else {
+          if (!contractService) {
+            console.warn('⚠️ Wallet not connected - item uploaded to storage only');
+            setError('Upload completed but wallet not connected. Connect your wallet to register the item on the blockchain.');
+          } else {
+            setSuccess('File uploaded successfully!');
+          }
         }
-      } else {
-        setSuccess('File uploaded successfully!');
-      }
         
         setUploadedFile(data.file);
         setSelectedFile(null);
@@ -178,7 +184,7 @@ export default function UploadPage() {
         <div className="text-center mb-8">
           <Link href="/" className="flex items-center justify-center mb-6">
             <Shield className="h-10 w-10 text-indigo-600" />
-            <span className="ml-2 text-2xl font-bold text-gray-900">IP Rights Store</span>
+            <span className="ml-2 text-2xl font-bold text-gray-900">IPGuardian</span>
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Upload Your Content</h1>
           <p className="text-gray-600">Share your intellectual property and monetize your work</p>
@@ -187,7 +193,7 @@ export default function UploadPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Upload Form */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-6">Upload File</h2>
+            <h2 className="text-xl text-black font-semibold mb-6">Upload File</h2>
             
             {/* Wallet Connection */}
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
@@ -323,7 +329,7 @@ export default function UploadPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                    Purchase Price (ETH)
+                    Purchase Price (MNT)
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -345,7 +351,7 @@ export default function UploadPage() {
 
                 <div>
                   <label htmlFor="rentalPrice" className="block text-sm font-medium text-gray-700 mb-2">
-                    Rental Price (ETH/day)
+                    Rental Price (MNT/day)
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -394,7 +400,7 @@ export default function UploadPage() {
 
           {/* Upload Guidelines */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-6">Upload Guidelines</h2>
+            <h2 className="text-xl text-black font-semibold mb-6">Upload Guidelines</h2>
             
             <div className="space-y-4">
               <div className="flex items-start">
@@ -434,7 +440,7 @@ export default function UploadPage() {
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-gray-900">Pricing</h3>
                   <p className="text-sm text-gray-500 mt-1">
-                    Set purchase and/or rental prices in ETH to monetize your content
+                    Set purchase and/or rental prices in MNT to monetize your content
                   </p>
                 </div>
               </div>
@@ -448,7 +454,7 @@ export default function UploadPage() {
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-gray-900">Blockchain Storage</h3>
                   <p className="text-sm text-gray-500 mt-1">
-                    Files are stored on Walrus decentralized storage and registered on blockchain
+                    Files are stored on IPFS decentralized storage and registered on blockchain
                   </p>
                 </div>
               </div>

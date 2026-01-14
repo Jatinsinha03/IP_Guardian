@@ -11,8 +11,6 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
-    "@mysten/sui": "^1.38.0",
-    "@mysten/walrus": "^0.7.0",
     "@prisma/client": "^6.16.2",
     "@types/bcrypt": "^6.0.0",
     "bcrypt": "^6.0.0",
@@ -20,6 +18,7 @@
     "lucide-react": "^0.544.0",
     "next": "15.5.4",
     "next-auth": "^4.24.11",
+    "pinata-web3": "^0.5.4",
     "prisma": "^6.16.2",
     "react": "19.1.0",
     "react-dom": "19.1.0"

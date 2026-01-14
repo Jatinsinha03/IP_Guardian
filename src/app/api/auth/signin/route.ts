@@ -5,6 +5,7 @@ import { verifyPassword } from '@/lib/auth'
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json()
+    console.log("DB URL:", process.env.DATABASE_URL);
 
     // Validation
     if (!email || !password) {

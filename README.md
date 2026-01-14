@@ -2,13 +2,13 @@
 
 ## 🛡️ Project Overview
 
-**IPGuardian** is a revolutionary decentralized platform that empowers creators to protect, monetize, and trade their intellectual property assets on the blockchain. Built on the Flow testnet and powered by Walrus decentralized storage, IPGuardian transforms how creators manage their digital assets by providing transparent ownership, flexible monetization, and secure storage solutions.
+**IPGuardian** is a revolutionary decentralized platform that empowers creators to protect, monetize, and trade their intellectual property assets on the blockchain. Built on the Mantle Sepolia testnet and powered by IPFS decentralized storage, IPGuardian transforms how creators manage their digital assets by providing transparent ownership, flexible monetization, and secure storage solutions.
 
 ## 🌟 Key Features
 
 ### 🔐 **Secure IP Protection**
 - **Blockchain Ownership**: Immutable ownership records on the blockchain
-- **Decentralized Storage**: Files stored on Walrus for censorship resistance
+- **Decentralized Storage**: Files stored on IPFS for censorship resistance
 - **Transparent History**: Complete ownership and rental history tracking
 
 ### 💰 **Flexible Monetization**
@@ -24,16 +24,16 @@
 
 ### 🔧 **Technical Excellence**
 - **Smart Contract Integration**: Automated IP management and payments
-- **Walrus Storage**: Decentralized file storage with blob ID tracking
+- **IPFS Storage**: Decentralized file storage with blob ID tracking
 - **MetaMask Integration**: Easy wallet connection and transactions
 - **Responsive UI**: Modern, user-friendly interface
 
 ## 🏗️ Technical Architecture
 
 ### Smart Contract Details
-- **Contract Address**: `0x1fBBe1c9A1a517f7C24544F4cf814ECd446ED023`
-- **Network**: Flow EVM Testnet
-- **RPC URL**: `https://testnet.evm.nodes.onflow.org`
+- **Contract Address**: `0x11BA8F022E7e6DF59Ae3a6Da0AAef6e5f3Ac9f8a`
+- **Network**: Mantle Sepolia Testnet
+- **View on Block Explorer**: [https://sepolia.mantlescan.xyz/address/0x11ba8f022e7e6df59ae3a6da0aaef6e5f3ac9f8a](https://sepolia.mantlescan.xyz/address/0x11ba8f022e7e6df59ae3a6da0aaef6e5f3ac9f8a)
 
 **Contract Features:**
 - IP item creation and management
@@ -42,8 +42,8 @@
 - Ownership history preservation
 - Reentrancy protection and access controls
 
-### Walrus Storage Integration
-- **Decentralized Storage**: Files stored on Walrus network for censorship resistance
+### IPFS Storage Integration
+- **Decentralized Storage**: Files stored on IPFS network for censorship resistance
 - **Blob ID Tracking**: Each file gets a unique blob ID for blockchain registration
 - **Retry Logic**: Robust upload/download with automatic retry mechanisms
 - **File Integrity**: Complete file verification and integrity checks
@@ -92,8 +92,8 @@
 ## 🔗 Technology Stack
 
 - **Frontend**: Next.js, React, TypeScript, Tailwind CSS
-- **Blockchain**: Flow Testnet, Solidity Smart Contracts
-- **Storage**: Walrus Decentralized Storage
+- **Blockchain**: Mantle Sepolia testnet, Solidity Smart Contracts
+- **Storage**: IPFS Decentralized Storage
 - **Wallet**: MetaMask Integration
 - **Database**: PostgreSQL with Prisma ORM
 - **Authentication**: Custom JWT-based system

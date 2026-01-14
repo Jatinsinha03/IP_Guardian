@@ -88,7 +88,7 @@ export default function SignUpPage() {
         <div className="text-center">
           <Link href="/" className="flex items-center justify-center mb-6">
             <Shield className="h-10 w-10 text-indigo-600" />
-            <span className="ml-2 text-2xl font-bold text-gray-900">IP Rights Store</span>
+            <span className="ml-2 text-2xl font-bold text-gray-900">IPGuardian</span>
           </Link>
           <h2 className="text-3xl font-bold text-gray-900">Create your account</h2>
           <p className="mt-2 text-sm text-gray-600">
@@ -172,7 +172,7 @@ export default function SignUpPage() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="block w-full text-black pl-10 pr-3 py-3 border border-gray-300 rounded-md placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Enter your email"
                 />
               </div>
@@ -193,7 +193,7 @@ export default function SignUpPage() {
                   type="text"
                   value={formData.organization}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="block w-full pl-10 pr-3 py-3 border text-black border-gray-300 rounded-md placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="University, Company, etc."
                 />
               </div>

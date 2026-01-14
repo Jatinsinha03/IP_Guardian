@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { uploadToWalrus } from '@/lib/walrus';
+import { uploadToIPFS } from '@/lib/ipfs';
 import { ContractService } from '@/lib/contract';
 
 export async function POST(request: NextRequest) {
@@ -60,9 +60,9 @@ export async function POST(request: NextRequest) {
 
     console.log(`📄 File received: ${file.name}, ${fileContents.length} bytes`);
 
-    // Upload to Walrus testnet
-    const blobId = await uploadToWalrus(fileContents);
-    console.log("✅ Blob ID from Walrus:", blobId);
+    // Upload to IPFS via Pinata
+    const blobId = await uploadToIPFS(fileContents, file.name);
+    console.log("✅ CID from IPFS:", blobId);
 
     // Save file metadata to database
     const savedFile = await prisma.file.create({
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
     console.log('- Rental Price (wei):', blockchainData.rentalPrice);
 
     return NextResponse.json(
-      { 
+      {
         message: 'File uploaded successfully',
         file: savedFile,
         blobId,
